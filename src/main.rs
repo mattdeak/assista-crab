@@ -2,6 +2,7 @@ mod openai;
 use openai::completion::{Client, ModelConfigurationBuilder};
 
 fn main() {
+    let api_key = std::env::var("OPENAI_KEY").unwrap();
     let config = ModelConfigurationBuilder::default()
         .max_tokens(60)
         .temperature(0.5)
@@ -9,13 +10,21 @@ fn main() {
         .build()
         .unwrap();
 
-    let api_key = std::env::var("OPENAI_KEY").unwrap();
-
     let client = Client::new(api_key, config);
 
-    let response = client
-        .complete("The meaning of life is the following: ")
-        .unwrap();
+    run_conversation_loop(&client);
+}
 
-    println!("{:?}", response.choices[0].text);
+fn run_conversation_loop(client: &Client) {
+    loop {
+        let mut input = String::new();
+
+        std::io::stdin().read_line(&mut input).unwrap();
+
+        let response = client.complete(&input).unwrap();
+
+        let choice = response.choices[0].text.clone();
+
+        println!("Assistant: {}", choice);
+    }
 }
