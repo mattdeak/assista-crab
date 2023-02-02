@@ -185,12 +185,23 @@ fn get_default_intents() -> Vec<ZeroShotIntent> {
         ZeroShotIntent {
             intent: "priming_task".to_string(),
             training_phrases: vec![
-                "I'm looking for a place to eat".to_string(),
                 "Help me write a letter".to_string(),
                 "Be polite to the customer".to_string(),
                 "You are a robot and you are going to help me".to_string(),
                 "Summarize the following text".to_string(),
                 "Jot down some notes".to_string(),
+                "Execute the following code".to_string(),
+            ],
+        },
+        ZeroShotIntent {
+            intent: "code_execution".to_string(),
+            training_phrases: vec![
+                "Tell me how many files are in the current directory".to_string(),
+                "What is the total size of the home directory?".to_string(),
+                "Give me a word count of the file named test.txt".to_string(),
+                "Execute a speed test on the network".to_string(),
+                "Show me the top 10 processes by memory usage".to_string(),
+                "Show me the top 10 processes by CPU usage".to_string(),
             ],
         },
     ];

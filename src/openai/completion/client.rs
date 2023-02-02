@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use serde::{Deserialize, Serialize};
 
 use super::config::ModelConfiguration;
@@ -73,6 +75,8 @@ fn send_completion_request(
 ) -> Result<CompletionResponse, reqwest::Error> {
     let client = reqwest::blocking::Client::new();
 
+    let request_json = serde_json::to_string(&request).unwrap();
+
     let response = client
         .post(URL)
         .header("Authorization", "Bearer ".to_string() + api_key)
@@ -80,9 +84,13 @@ fn send_completion_request(
         .json(request)
         .send()?;
 
-    let result = response.json::<CompletionResponse>()?;
-
-    Ok(result)
+    match response.json::<CompletionResponse>() {
+        Ok(result) => Ok(result),
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            Err(e)
+        }
+    }
 }
 
 #[cfg(test)]

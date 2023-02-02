@@ -5,6 +5,8 @@ use crate::model_traits::CompletionModel;
 pub struct ChatbotBuilder<T: CompletionModel> {
     model: T,
     conversation_limit: usize,
+    prefix: Option<String>,
+    suffix: Option<String>,
 }
 
 impl<T: CompletionModel> ChatbotBuilder<T> {
@@ -12,6 +14,8 @@ impl<T: CompletionModel> ChatbotBuilder<T> {
         Self {
             model,
             conversation_limit: 10,
+            prefix: None,
+            suffix: None,
         }
     }
 
@@ -20,11 +24,23 @@ impl<T: CompletionModel> ChatbotBuilder<T> {
         self
     }
 
+    pub fn prefix(mut self, prefix: &str) -> Self {
+        self.prefix = Some(prefix.to_string());
+        self
+    }
+
+    pub fn suffix(mut self, suffix: &str) -> Self {
+        self.suffix = Some(suffix.to_string());
+        self
+    }
+
     pub fn build(self) -> Chatbot<T> {
         Chatbot {
             model: self.model,
             conversation: Vec::new(),
             conversation_limit: self.conversation_limit,
+            prefix: self.prefix,
+            suffix: self.suffix,
         }
     }
 }
@@ -32,6 +48,8 @@ pub struct Chatbot<T: CompletionModel> {
     model: T,
     conversation: Vec<String>,
     conversation_limit: usize,
+    prefix: Option<String>,
+    suffix: Option<String>,
 }
 
 impl<T: CompletionModel> Chatbot<T> {
@@ -45,8 +63,18 @@ impl<T: CompletionModel> Chatbot<T> {
 
     pub fn respond(&mut self, prompt: &str) -> Result<String, Box<dyn Error>> {
         let prompt = match self.conversation.len() {
-            0 => prompt.to_string(),
+            0 => prompt.trim().to_string(),
             _ => format!("{}\n{}", self.build_conversation_prompt(), prompt),
+        };
+
+        let prompt = match &self.prefix {
+            Some(prefix) => format!("{}{}", prefix, prompt),
+            None => prompt,
+        };
+
+        let prompt = match &self.suffix {
+            Some(suffix) => format!("{}{}", prompt, suffix),
+            None => prompt,
         };
 
         let response = self.model.complete(&prompt)?;

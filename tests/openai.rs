@@ -21,6 +21,24 @@ fn test_completion() {
 }
 
 #[test]
+fn test_completion_with_penalty() {
+    let api_key = std::env::var("OPENAI_KEY").unwrap();
+
+    let model_configuration = ModelConfigurationBuilder::default()
+        .frequency_penalty(0.4)
+        .build()
+        .unwrap();
+
+    let client = CompletionClient::new(api_key, model_configuration);
+
+    let response = client.complete("The meaning of life is the following: ");
+
+    println!("{:?}", response);
+
+    assert!(response.is_ok());
+}
+
+#[test]
 fn test_embedding() {
     let api_key = std::env::var("OPENAI_KEY").unwrap();
 

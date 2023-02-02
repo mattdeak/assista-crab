@@ -30,14 +30,14 @@ fn run_chatbot() {
     let api_key = std::env::var("OPENAI_KEY").unwrap();
     let config = ModelConfigurationBuilder::default()
         .model("text-davinci-003".into())
-        .max_tokens(260)
-        .temperature(0.5)
+        .max_tokens(1000)
+        .temperature(0.3)
         .top_p(1.0)
         .build()
         .unwrap();
 
     let client = CompletionClient::new(api_key, config);
-    let mut chatbot = Chatbot::new(client).build();
+    let mut chatbot = Chatbot::new(client).prefix("You are a chatbot. Respond to the user, but do it in the style of a pirate. Here is the conversation so far: \n").build();
 
     run_conversation_loop(&mut chatbot);
 }
