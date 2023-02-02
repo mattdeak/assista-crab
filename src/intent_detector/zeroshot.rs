@@ -204,6 +204,22 @@ fn get_default_intents() -> Vec<ZeroShotIntent> {
                 "Show me the top 10 processes by CPU usage".to_string(),
             ],
         },
+        ZeroShotIntent {
+            intent: "style_change".to_string(),
+            training_phrases: vec![
+                "Speak more casually".to_string(),
+                "Answer with more formality".to_string(),
+                "Speak more professionally".to_string(),
+                "Answer more rudely".to_string(),
+                "Write like a pirate".to_string(),
+                "Write like a robot".to_string(),
+                "Answer like a 1950s gangster".to_string(),
+                "Frame everything like a fortune cookie".to_string(),
+                "Respond in the form of a haiku".to_string(),
+                "Be more poetic".to_string(),
+                "Be more sarcastic".to_string(),
+            ],
+        },
     ];
 
     intents

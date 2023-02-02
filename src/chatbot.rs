@@ -53,12 +53,20 @@ pub struct Chatbot<T: CompletionModel> {
 }
 
 impl<T: CompletionModel> Chatbot<T> {
-    pub fn new(model: T) -> ChatbotBuilder<T> {
+    pub fn builder(model: T) -> ChatbotBuilder<T> {
         ChatbotBuilder::new(model)
     }
 
     fn build_conversation_prompt(&self) -> String {
         self.conversation.join("\n")
+    }
+
+    pub fn set_prefix(&mut self, prefix: &str) {
+        self.prefix = Some(prefix.to_string());
+    }
+
+    pub fn set_suffix(&mut self, suffix: &str) {
+        self.suffix = Some(suffix.to_string());
     }
 
     pub fn respond(&mut self, prompt: &str) -> Result<String, Box<dyn Error>> {
@@ -106,7 +114,7 @@ mod tests {
 
     #[test]
     fn test_chatbot() {
-        let mut chatbot = Chatbot::new(MockCompletionModel).build();
+        let mut chatbot = Chatbot::builder(MockCompletionModel).build();
 
         let response = chatbot.respond("Hello").unwrap();
         assert_eq!(response, "Hello");

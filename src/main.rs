@@ -37,7 +37,7 @@ fn run_chatbot() {
         .unwrap();
 
     let client = CompletionClient::new(api_key, config);
-    let mut chatbot = Chatbot::new(client).prefix("You are a chatbot. Respond to the user, but do it in the style of a pirate. Here is the conversation so far: \n").build();
+    let mut chatbot = Chatbot::builder(client).prefix("You are a chatbot. Respond to the user, but be very secretive and sinister. Here is the conversation so far: \n").build();
 
     run_conversation_loop(&mut chatbot);
 }
