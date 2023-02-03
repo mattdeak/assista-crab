@@ -3,13 +3,15 @@ use std::io::Write;
 use assistant::chatbot::Chatbot;
 use assistant::intent_detector::intent_detector::IntentDetector;
 use assistant::intent_detector::zeroshot::ZeroShotIntentDetector;
-use assistant::model_traits::CompletionModel;
+use assistant::model_traits::Responder;
 use assistant::openai::completion::client::CompletionClient;
 use assistant::openai::completion::config::ModelConfigurationBuilder;
 use assistant::openai::embedding::client::EmbeddingClient;
 use assistant::openai::embedding::config::EmbeddingModelConfig;
+use assistant::prebuilt::build_default_router;
 use clap::Parser;
 
+#[allow(dead_code)]
 #[derive(Parser)]
 #[command(name = "assistant", author = "Matthew Deakos")]
 struct Cli {
@@ -21,9 +23,14 @@ fn main() {
     let args = Cli::parse();
 
     match args.intent {
-        false => run_chatbot(),
+        false => run_router(),
         true => run_intent_detector(),
     }
+}
+
+fn run_router() {
+    let mut router = build_default_router();
+    run_conversation_loop(&mut router);
 }
 
 fn run_chatbot() {
@@ -37,12 +44,12 @@ fn run_chatbot() {
         .unwrap();
 
     let client = CompletionClient::new(api_key, config);
-    let mut chatbot = Chatbot::builder(client).prefix("You are a chatbot. Respond to the user, but be very secretive and sinister. Here is the conversation so far: \n").build();
+    let mut chatbot = Chatbot::builder(client).prefix("You are a chatbot. Respond to the user, but respond as if you are a pirate. Really embellish, and be very very pirate-like. \n").build();
 
     run_conversation_loop(&mut chatbot);
 }
 
-fn run_conversation_loop<C: CompletionModel>(chatbot: &mut Chatbot<C>) {
+fn run_conversation_loop<R: Responder>(chatbot: &mut R) {
     loop {
         let mut input = String::new();
 

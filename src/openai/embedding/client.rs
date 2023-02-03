@@ -57,7 +57,7 @@ impl EmbeddingClient {
 }
 
 impl EmbeddingModel for EmbeddingClient {
-    fn embed(&self, documents: &Vec<String>) -> Result<Vec<Vec<f32>>, Box<dyn std::error::Error>> {
+    fn embed(&self, documents: &[String]) -> Result<Vec<Vec<f32>>, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
         let request = EmbeddingRequest::new(documents.to_vec(), self.config.clone());
 

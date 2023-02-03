@@ -10,11 +10,11 @@ pub struct EmbeddingModelConfig {
 }
 
 impl EmbeddingModelConfig {
-    fn new(model: String) -> Self {
+    pub fn new(model: String) -> Self {
         Self { model, user: None }
     }
 
-    fn with_user(mut self, user: String) -> Self {
+    pub fn with_user(mut self, user: String) -> Self {
         self.user = Some(user);
         self
     }

@@ -1,12 +1,16 @@
 use std::error::Error;
 
-use crate::model_traits::CompletionModel;
+use crate::model_traits::{CompletionModel, Responder};
+
+type ChatBotProcessor = dyn Fn(&str) -> Result<String, Box<dyn Error>>;
 
 pub struct ChatbotBuilder<T: CompletionModel> {
     model: T,
     conversation_limit: usize,
     prefix: Option<String>,
     suffix: Option<String>,
+    preprocessors: Vec<Box<ChatBotProcessor>>,
+    postprocessors: Vec<Box<ChatBotProcessor>>,
 }
 
 impl<T: CompletionModel> ChatbotBuilder<T> {
@@ -16,6 +20,8 @@ impl<T: CompletionModel> ChatbotBuilder<T> {
             conversation_limit: 10,
             prefix: None,
             suffix: None,
+            preprocessors: Vec::new(),
+            postprocessors: Vec::new(),
         }
     }
 
@@ -34,6 +40,16 @@ impl<T: CompletionModel> ChatbotBuilder<T> {
         self
     }
 
+    pub fn add_preprocessor(mut self, preprocessor: &'static ChatBotProcessor) -> Self {
+        self.preprocessors.push(Box::new(preprocessor));
+        self
+    }
+
+    pub fn add_postprocessor(mut self, postprocessor: &'static ChatBotProcessor) -> Self {
+        self.postprocessors.push(Box::new(postprocessor));
+        self
+    }
+
     pub fn build(self) -> Chatbot<T> {
         Chatbot {
             model: self.model,
@@ -41,6 +57,8 @@ impl<T: CompletionModel> ChatbotBuilder<T> {
             conversation_limit: self.conversation_limit,
             prefix: self.prefix,
             suffix: self.suffix,
+            preprocessors: self.preprocessors,
+            postprocessors: self.postprocessors,
         }
     }
 }
@@ -50,6 +68,8 @@ pub struct Chatbot<T: CompletionModel> {
     conversation_limit: usize,
     prefix: Option<String>,
     suffix: Option<String>,
+    preprocessors: Vec<Box<ChatBotProcessor>>,
+    postprocessors: Vec<Box<ChatBotProcessor>>,
 }
 
 impl<T: CompletionModel> Chatbot<T> {
@@ -68,8 +88,10 @@ impl<T: CompletionModel> Chatbot<T> {
     pub fn set_suffix(&mut self, suffix: &str) {
         self.suffix = Some(suffix.to_string());
     }
+}
 
-    pub fn respond(&mut self, prompt: &str) -> Result<String, Box<dyn Error>> {
+impl<T: CompletionModel> Responder for Chatbot<T> {
+    fn respond(&mut self, prompt: &str) -> Result<String, Box<dyn Error>> {
         let prompt = match self.conversation.len() {
             0 => prompt.trim().to_string(),
             _ => format!("{}\n{}", self.build_conversation_prompt(), prompt),
@@ -96,7 +118,12 @@ impl<T: CompletionModel> Chatbot<T> {
                 .split_off(self.conversation.len() - self.conversation_limit);
         }
 
-        Ok(response)
+        let final_result = self
+            .postprocessors
+            .iter()
+            .try_fold(response, |response, postprocessor| postprocessor(&response))?;
+
+        Ok(final_result)
     }
 }
 
